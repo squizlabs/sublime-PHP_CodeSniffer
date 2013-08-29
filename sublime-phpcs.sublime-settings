@@ -1,0 +1,8 @@
+{
+    "run_on_save": false,
+    "phpcs_path": "/usr/local/bin/phpcs",
+    "phpcbf_path": "/usr/local/bin/phpcbf",
+    "phpcs_standard": "Squiz",
+    "error_scope": "comment.block",
+    "warning_scope": "function"
+}

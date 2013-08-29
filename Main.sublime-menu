@@ -1,0 +1,62 @@
+[
+    {
+        "id": "tools",
+        "children":
+        [
+            {
+                "caption": "PHPCodeSniffer",
+                "id": "phpcs",
+                "children":
+                [
+                    {
+                        "caption": "Run PHPCS",
+                        "command": "phpcs"
+                    },
+                    {
+                        "caption": "Run PHPCBF",
+                        "command": "phpcbf"
+                    },
+                    {
+                        "caption": "Show PHPCS Results",
+                        "command": "show_phpcs_result"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "preferences",
+        "children":
+        [
+            {
+                "caption": "Package Settings",
+                "id": "package-settings",
+                "children":
+                [
+                    {
+                        "caption": "PHPCS",
+                        "children":
+                        [
+                            {
+                                "caption": "Settings – Default",
+                                "command": "open_file",
+                                "args":
+                                {
+                                    "file": "${packages}/Phpcs/sublime-phpcs.sublime-settings"
+                                }
+                            },
+                            {
+                                "caption": "Settings – User",
+                                "command": "open_file",
+                                "args":
+                                {
+                                    "file": "${packages}/User/sublime-phpcs.sublime-settings"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

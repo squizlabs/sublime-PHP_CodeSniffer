@@ -1,0 +1,28 @@
+[
+    {
+        "caption": "PHPCS: Run PHPCS",
+        "command": "phpcs"
+    },
+    {
+        "caption": "PHPCS: Run PHPCBF",
+        "command": "phpcbf"
+    },
+    {
+        "caption": "PHPCS: Show Results",
+        "command": "show_phpcs_result"
+    },
+    {
+        "caption": "Preferences: PHPCS Settings – Default",
+        "command": "open_file", "args":
+        {
+            "file": "${packages}/Phpcs/sublime-phpcs.sublime-settings"
+        }
+    },
+    {
+        "caption": "Preferences: PHPCS Settings – User",
+        "command": "open_file", "args":
+        {
+            "file": "${packages}/User/sublime-phpcs.sublime-settings"
+        }
+    }
+]

@@ -1,0 +1,12 @@
+[
+    {
+        "keys": ["alt+s"],
+        "__doc__": "Run PHPCS",
+        "command": "phpcs"
+    },
+    {
+        "keys": ["alt+shift+s"],
+        "__doc__": "Run PHPCBF",
+        "command": "phpcbf"
+    }
+]
