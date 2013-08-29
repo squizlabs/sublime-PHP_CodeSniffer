@@ -4,21 +4,17 @@
         "children":
         [
             {
-                "caption": "PHPCodeSniffer",
+                "caption": "PHP_CodeSniffer",
                 "id": "phpcs",
                 "children":
                 [
                     {
-                        "caption": "Run PHPCS",
+                        "caption": "Check File",
                         "command": "phpcs"
                     },
                     {
-                        "caption": "Run PHPCBF",
+                        "caption": "Fix File",
                         "command": "phpcbf"
-                    },
-                    {
-                        "caption": "Show PHPCS Results",
-                        "command": "show_phpcs_result"
                     }
                 ]
             }
@@ -34,7 +30,7 @@
                 "children":
                 [
                     {
-                        "caption": "PHPCS",
+                        "caption": "PHP_CodeSniffer",
                         "children":
                         [
                             {
@@ -42,7 +38,7 @@
                                 "command": "open_file",
                                 "args":
                                 {
-                                    "file": "${packages}/Phpcs/sublime-phpcs.sublime-settings"
+                                    "file": "${packages}/PHP_CodeSniffer/PHP_CodeSniffer.sublime-settings"
                                 }
                             },
                             {
@@ -50,7 +46,7 @@
                                 "command": "open_file",
                                 "args":
                                 {
-                                    "file": "${packages}/User/sublime-phpcs.sublime-settings"
+                                    "file": "${packages}/User/PHP_CodeSniffer.sublime-settings"
                                 }
                             }
                         ]

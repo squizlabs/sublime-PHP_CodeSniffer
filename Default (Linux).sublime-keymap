@@ -1,12 +1,12 @@
 [
     {
         "keys": ["alt+s"],
-        "__doc__": "Run PHPCS",
+        "__doc__": "Check File",
         "command": "phpcs"
     },
     {
         "keys": ["alt+shift+s"],
-        "__doc__": "Run PHPCBF",
+        "__doc__": "Fix File",
         "command": "phpcbf"
     }
 ]

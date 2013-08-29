@@ -6,11 +6,9 @@ import StringIO
 import difflib
 
 RESULT_VIEW_NAME = 'phpcs_result_view'
-settings         = sublime.load_settings('sublime-phpcs.sublime-settings')
+settings         = sublime.load_settings('PHP_CodeSniffer.sublime-settings')
 
-phpcs = PHPCS()
-
-class PHPCS:
+class PHP_CodeSniffer:
   def runPhpcbf(self, window, content=''):
     if not content:
       content = window.active_view().substr(sublime.Region(0, window.active_view().size()))
@@ -34,7 +32,7 @@ class PHPCS:
         sublime.status_message("Diff only works with UTF-8 files")
         return
 
-    diff = difflib.unified_diff(a, b, lineterm='')
+    diff = difflib.unified_diff(a, b, 'Original', 'Fixed', lineterm='')
     difftxt = u"\n".join(line for line in diff)
 
     if difftxt == "":
@@ -73,6 +71,7 @@ class PHPCS:
       data = proc.communicate(content)[0]
 
     data = data.replace('PHPCBF CAN FIX', 'CLICK HERE TO FIX')
+    data = data.replace("FILE: STDIN\n", '')
 
     outputView.set_read_only(False)
     outputView.set_syntax_file('Packages/Diff/Diff.tmLanguage')
@@ -91,9 +90,7 @@ class PHPCS:
       if len(lparts) == 3:
         line = int(lparts[0])
         pt = window.active_view().text_point(line - 1, 0)
-        #startCol = pt
-        #endCol   = startCol + 10
-        #col_regions.append(sublime.Region(startCol, endCol))
+
         if lparts[1].strip() == 'ERROR':
           err_regions.append(window.active_view().line(pt))
         else:
@@ -101,14 +98,11 @@ class PHPCS:
 
     window.active_view().erase_regions('errors')
     window.active_view().erase_regions('warnings')
-    window.active_view().add_regions('errors', err_regions, settings.get('error_scope'), '../Phpcs/icons/error', sublime.HIDDEN)
-    window.active_view().add_regions('warnings', warn_regions, settings.get('warning_scope'), '../Phpcs/icons/warning', sublime.HIDDEN)
-    #window.active_view().add_regions('col_reg', col_regions, settings.get('warning_scope'), '../Phpcs/icons/warning')
+    window.active_view().add_regions('errors', err_regions, settings.get('error_scope'), '../PHP_CodeSniffer/icons/error', sublime.HIDDEN)
+    window.active_view().add_regions('warnings', warn_regions, settings.get('warning_scope'), '../PHP_CodeSniffer/icons/warning', sublime.HIDDEN)
 
-
-class ShowPhpcsResultCommand(sublime_plugin.WindowCommand):
-  def run(self):
-    self.window.run_command("show_panel", {"panel": "output." + RESULT_VIEW_NAME})
+# Init PHPCS.
+phpcs = PHP_CodeSniffer()
 
 class PhpcbfCommand(sublime_plugin.WindowCommand):
   def run(self):
