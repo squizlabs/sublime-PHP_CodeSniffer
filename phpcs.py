@@ -22,18 +22,14 @@ class PHPCS:
 
     proc = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
     if proc.stdout:
-      data = proc.communicate(content)[0]
+      newContent = proc.communicate(content)[0]
 
-    mainEdit = window.active_view().begin_edit()
-    window.active_view().replace(mainEdit, sublime.Region(0, window.active_view().size()), data)
-    window.active_view().end_edit(mainEdit)
+    self.runDiff(window, content, newContent)
 
-    self.runDiff(window, content)
-
-  def runDiff(self, window, origContent):
+  def runDiff(self, window, origContent, newContent):
     try:
         a = origContent.splitlines()
-        b = window.active_view().substr(sublime.Region(0, window.active_view().size())).splitlines()
+        b = newContent.splitlines()
     except UnicodeDecodeError:
         sublime.status_message("Diff only works with UTF-8 files")
         return
@@ -45,7 +41,12 @@ class PHPCS:
         sublime.status_message("No changes")
         return
 
-    use_buffer = window.active_view().settings().get('diff_changes_to_buffer')
+    window.active_view().erase_regions('errors')
+    window.active_view().erase_regions('warnings')
+
+    mainEdit = window.active_view().begin_edit()
+    window.active_view().replace(mainEdit, sublime.Region(0, window.active_view().size()), newContent)
+    window.active_view().end_edit(mainEdit)
 
     v = window.get_output_panel('unsaved_changes')
     v.set_syntax_file('Packages/Diff/Diff.tmLanguage')
@@ -154,6 +155,12 @@ class PhpcsEventListener(sublime_plugin.EventListener):
   def __init__(self):
     self.previous_region = None
     self.file_view = None
+
+  def on_query_context(self, view, key, operator, operand, match_all):
+    # TODO: No idea if this is the right way but seems to work o.O
+    if key == 'panel_visible':
+      view.erase_regions('errors')
+      view.erase_regions('warnings')
 
   def on_post_save(self, view):
     if settings.get('run_on_save', False) == False:
