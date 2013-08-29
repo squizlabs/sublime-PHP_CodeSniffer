@@ -1,14 +1,14 @@
 import os
-import re
 import sublime
 import sublime_plugin
 import subprocess
 import StringIO
 import difflib
-import time
 
 RESULT_VIEW_NAME = 'phpcs_result_view'
 settings         = sublime.load_settings('sublime-phpcs.sublime-settings')
+
+phpcs = PHPCS()
 
 class PHPCS:
   def runPhpcbf(self, window, content=''):
@@ -72,6 +72,8 @@ class PHPCS:
     if proc.stdout:
       data = proc.communicate(content)[0]
 
+    data = data.replace('PHPCBF CAN FIX', 'CLICK HERE TO FIX')
+
     outputView.set_read_only(False)
     outputView.set_syntax_file('Packages/Diff/Diff.tmLanguage')
     edit = outputView.begin_edit()
@@ -110,7 +112,6 @@ class ShowPhpcsResultCommand(sublime_plugin.WindowCommand):
 
 class PhpcbfCommand(sublime_plugin.WindowCommand):
   def run(self):
-    phpcs   = PHPCS();
     phpcs.runPhpcbf(self.window)
 
 class PhpcsCommand(sublime_plugin.WindowCommand):
@@ -126,7 +127,6 @@ class PhpcsCommand(sublime_plugin.WindowCommand):
     self.showResultsPanel()
 
     content = self.window.active_view().substr(sublime.Region(0, self.window.active_view().size()))
-    phpcs   = PHPCS();
     phpcs.runPhpcs(self.window, self.output_view, content)
 
 
@@ -151,7 +151,6 @@ class PhpcsCommand(sublime_plugin.WindowCommand):
     self.output_view.set_read_only(True)
 
 class PhpcsEventListener(sublime_plugin.EventListener):
-  disabled = False
   def __init__(self):
     self.previous_region = None
     self.file_view = None
@@ -172,9 +171,6 @@ class PhpcsEventListener(sublime_plugin.EventListener):
     sublime.active_window().run_command("phpcs")
 
   def on_selection_modified(self, view):
-    if PhpcsEventListener.disabled:
-      return
-
     if view.name() != RESULT_VIEW_NAME:
       return
 
@@ -184,31 +180,33 @@ class PhpcsEventListener(sublime_plugin.EventListener):
       return
 
     self.previous_region = region
+    window = sublime.active_window()
 
     text = view.substr(region).split('|')
     if len(text) != 3:
-      if text[0].startswith('PHPCBF'):
-        phpcs = PHPCS();
-        phpcs.runPhpcbf(sublime.active_window())
+      if text[0].startswith('CLICK HERE'):
+        phpcs.runPhpcbf(window)
       return
-
-    lineNum = int(text[0])
 
     # Highlight the clicked results line.
     view.add_regions(RESULT_VIEW_NAME, [region], "string", '', sublime.DRAW_OUTLINED)
 
     # Find the file view.
-    file_path = view.settings().get('file_path')
-    window = sublime.active_window()
-    file_view = None
-    for v in window.views():
-      if v.file_name() == file_path:
-        file_view = v
-        break
-    if file_view == None:
-      return
+    file_view = self.file_view
+    if not file_view:
+      file_path = view.settings().get('file_path')
+      file_view = None
+      for v in window.views():
+        if v.file_name() == file_path:
+          file_view = v
+          break
 
-    self.file_view = file_view
+      if file_view == None:
+        return
+
+      self.file_view = file_view
+
+    lineNum = int(text[0])
     window.focus_view(file_view)
     file_view.run_command("goto_line", {"line": lineNum})
     file_region = file_view.line(file_view.sel()[0])
