@@ -1,4 +1,5 @@
 import os
+import re
 import sublime
 import sublime_plugin
 import subprocess
@@ -17,6 +18,9 @@ class PHP_CodeSniffer:
 
     if settings.get('phpcs_standard'):
       args.append('--standard=' + settings.get('phpcs_standard'))
+
+    if settings.get('additional_args'):
+      args += settings.get('additional_args')
 
     proc = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
     if proc.stdout:
@@ -64,14 +68,14 @@ class PHP_CodeSniffer:
     if settings.get('phpcs_standard'):
       args.append('--standard=' + settings.get('phpcs_standard'))
 
-    args.append('--report-width=300')
+    if settings.get('additional_args'):
+      args += settings.get('additional_args')
+
+    args.append('--report=' + sublime.packages_path() + '/PHP_CodeSniffer/STPluginReport.php')
 
     proc = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
     if proc.stdout:
       data = proc.communicate(content)[0]
-
-    data = data.replace('PHPCBF CAN FIX', 'CLICK HERE TO FIX')
-    data = data.replace("FILE: STDIN\n", '')
 
     outputView.set_read_only(False)
     outputView.set_syntax_file('Packages/Diff/Diff.tmLanguage')
@@ -85,13 +89,18 @@ class PHP_CodeSniffer:
     err_regions  = []
     warn_regions = []
     col_regions  = []
+    msg_type     = ''
     for line in lines:
-      lparts = line.split("|")
-      if len(lparts) == 3:
-        line = int(lparts[0])
-        pt = window.active_view().text_point(line - 1, 0)
+      if line == ' Errors:':
+        msg_type = 'error'
+      elif line == ' Warnings:':
+        msg_type = 'warning'
 
-        if lparts[1].strip() == 'ERROR':
+      match = re.match(r'[^:0-9]+([0-9]+)\s*:', line)
+
+      if match:
+        pt = window.active_view().text_point(int(match.group(1)) - 1, 0)
+        if msg_type == 'error':
           err_regions.append(window.active_view().line(pt))
         else:
           warn_regions.append(window.active_view().line(pt))
@@ -176,10 +185,14 @@ class PhpcsEventListener(sublime_plugin.EventListener):
     self.previous_region = region
     window = sublime.active_window()
 
-    text = view.substr(region).split('|')
-    if len(text) != 3:
-      if text[0].startswith('CLICK HERE'):
-        phpcs.runPhpcbf(window)
+    line = view.substr(region)
+
+    if line.find('[ Click here to fix this file ]') != -1:
+      phpcs.runPhpcbf(window)
+      return
+
+    match = re.match(r'[^:0-9]+([0-9]+)\s*:', line)
+    if not match:
       return
 
     # Highlight the clicked results line.
@@ -200,7 +213,7 @@ class PhpcsEventListener(sublime_plugin.EventListener):
 
       self.file_view = file_view
 
-    lineNum = int(text[0])
+    lineNum = int(match.group(1))
     window.focus_view(file_view)
     file_view.run_command("goto_line", {"line": lineNum})
     file_region = file_view.line(file_view.sel()[0])

@@ -4,5 +4,6 @@
     "phpcbf_path": "/usr/local/bin/phpcbf",
     "phpcs_standard": "Squiz",
     "error_scope": "comment.block",
-    "warning_scope": "function"
+    "warning_scope": "function",
+    "additional_args": []
 }
