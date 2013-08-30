@@ -43,6 +43,8 @@ class PHP_CodeSniffer:
         sublime.status_message("No changes")
         return
 
+    difftxt = "\n PHP_CodeSniffer made the following fixes to this file:\n\n" + difftxt
+
     window.active_view().erase_regions('errors')
     window.active_view().erase_regions('warnings')
 
@@ -54,9 +56,11 @@ class PHP_CodeSniffer:
     v.set_syntax_file('Packages/Diff/Diff.tmLanguage')
     v.settings().set('word_wrap', window.active_view().settings().get('word_wrap'))
 
+    v.set_read_only(False)
     edit = v.begin_edit()
     v.insert(edit, 0, difftxt)
     v.end_edit(edit)
+    v.set_read_only(True)
 
     window.run_command("show_panel", {"panel": "output.unsaved_changes"})
 

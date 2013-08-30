@@ -54,6 +54,7 @@ class PHP_CodeSniffer_Reports_STPluginReport implements PHP_CodeSniffer_Report
             return false;
         }
 
+        echo PHP_EOL;
         echo ' PHP_CodeSniffer found '.$report['errors'].' error';
         if ($report['errors'] !== 1) {
             echo 's';
