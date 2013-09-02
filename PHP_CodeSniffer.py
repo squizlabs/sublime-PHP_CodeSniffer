@@ -144,6 +144,7 @@ class PHP_CodeSniffer:
       self.output_view = window.get_output_panel(RESULT_VIEW_NAME)
       self.output_view.set_syntax_file('Packages/Diff/Diff.tmLanguage')
       self.output_view.set_name(RESULT_VIEW_NAME)
+      self.output_view.settings().set('gutter', False)
 
     self.clear_view()
     self.output_view.settings().set("file_path", window.active_view().file_name())
@@ -182,7 +183,7 @@ class PHP_CodeSniffer:
         return
 
     # Highlight the clicked results line.
-    self.output_view.add_regions('phpcs-line', [region], "comment", "bookmark", sublime.HIDDEN)
+    self.output_view.add_regions(RESULT_VIEW_NAME, [region], "comment", 'bookmark', sublime.DRAW_OUTLINED)
 
     lineNum = match.group(1)
     self.go_to_line(lineNum)
@@ -204,14 +205,12 @@ class PHP_CodeSniffer:
         if match:
           lineNum = int(match.group(1)) + offset - 1
           self.go_to_line(lineNum)
+
         break
       elif not line.startswith('-'):
         offset = offset + 1
 
       row = row - 1
-
-    # Highlight the clicked results line.
-    self.output_view.add_regions('phpcs-line', [region], "comment", "bookmark", sublime.HIDDEN)
 
 
   def go_to_line(self, lineNum):
