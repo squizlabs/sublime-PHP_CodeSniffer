@@ -1,5 +1,6 @@
 {
     "run_on_save": false,
+    "php_path": "",
     "phpcs_path": "/usr/local/bin/phpcs",
     "phpcbf_path": "/usr/local/bin/phpcbf",
     "phpcs_standard": "Squiz",

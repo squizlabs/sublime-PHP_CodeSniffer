@@ -18,7 +18,20 @@ class PHP_CodeSniffer:
   def runPhpcbf(self, window):
     content = window.active_view().substr(sublime.Region(0, window.active_view().size()))
 
-    args = [settings.get('phpcbf_path', 'phpcbf')]
+    args = []
+
+    shell = False
+    if os.name == 'nt':
+      shell = True
+      args.append('start')
+      args.append('/B')
+
+    if settings.get('php_path'):
+      args.append(settings.get('php_path'))
+    elif os.name == 'nt':
+      args.append('php')
+
+    args.append(settings.get('phpcbf_path', 'phpcbf'))
 
     if settings.get('phpcs_standard'):
       args.append('--standard=' + settings.get('phpcs_standard'))
@@ -26,7 +39,7 @@ class PHP_CodeSniffer:
     if settings.get('additional_args'):
       args += settings.get('additional_args')
 
-    proc = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+    proc = subprocess.Popen(args, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
     if proc.stdout:
       newContent = proc.communicate(content)[0]
 
@@ -82,7 +95,20 @@ class PHP_CodeSniffer:
 
   def runPhpcs(self, window):
     # PHPCS cmd args.
-    args = [settings.get('phpcs_path', 'phpcs')]
+    args = []
+
+    shell = False
+    if os.name == 'nt':
+      shell = True
+      args.append('start')
+      args.append('/B')
+
+    if settings.get('php_path'):
+      args.append(settings.get('php_path'))
+    elif os.name == 'nt':
+      args.append('php')
+
+    args.append(settings.get('phpcs_path', 'phpcs'))
 
     if settings.get('phpcs_standard'):
       args.append('--standard=' + settings.get('phpcs_standard'))
@@ -92,7 +118,7 @@ class PHP_CodeSniffer:
 
     args.append('--report=' + sublime.packages_path() + '/PHP_CodeSniffer/STPluginReport.php')
 
-    proc = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+    proc = subprocess.Popen(args, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 
     content = window.active_view().substr(sublime.Region(0, window.active_view().size()))
 
