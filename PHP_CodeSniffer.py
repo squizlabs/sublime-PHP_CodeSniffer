@@ -182,7 +182,7 @@ class PHP_CodeSniffer:
         return
 
     # Highlight the clicked results line.
-    self.output_view.add_regions(RESULT_VIEW_NAME, [region], "string", '', sublime.DRAW_OUTLINED)
+    self.output_view.add_regions('phpcs-line', [region], "comment", "bookmark", sublime.HIDDEN)
 
     lineNum = match.group(1)
     self.go_to_line(lineNum)
@@ -204,12 +204,14 @@ class PHP_CodeSniffer:
         if match:
           lineNum = int(match.group(1)) + offset - 1
           self.go_to_line(lineNum)
-
-        return
+        break
       elif not line.startswith('-'):
         offset = offset + 1
 
       row = row - 1
+
+    # Highlight the clicked results line.
+    self.output_view.add_regions('phpcs-line', [region], "comment", "bookmark", sublime.HIDDEN)
 
 
   def go_to_line(self, lineNum):
