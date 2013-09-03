@@ -93,19 +93,18 @@ class PHP_CodeSniffer:
     msg_type     = ''
 
     for line in lines:
-      if line == ' Errors:':
+      if line.find('Errors:') != -1:
         msg_type = 'error'
-      elif line == ' Warnings:':
+      elif line.find('Warnings:') != -1:
         msg_type = 'warning'
-
-      match = re.match(r'[^:0-9]+([0-9]+)\s*:', line)
-
-      if match:
-        pt = window.active_view().text_point(int(match.group(1)) - 1, 0)
-        if msg_type == 'error':
-          err_regions.append(window.active_view().line(pt))
-        else:
-          warn_regions.append(window.active_view().line(pt))
+      else:
+        match = re.match(r'[^:0-9]+([0-9]+)\s*:', line)
+        if match:
+          pt = window.active_view().text_point(int(match.group(1)) - 1, 0)
+          if msg_type == 'error':
+            err_regions.append(window.active_view().line(pt))
+          else:
+            warn_regions.append(window.active_view().line(pt))
 
     window.active_view().erase_regions('errors')
     window.active_view().erase_regions('warnings')
