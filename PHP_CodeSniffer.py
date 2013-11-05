@@ -18,7 +18,7 @@ class PHP_CodeSniffer:
 
   def run(self, window, cmd):
     content = window.active_view().substr(sublime.Region(0, window.active_view().size()))
-    t = threading.Thread(target=self.run_command, args=(self.get_command_args(cmd), cmd, content, window))
+    t = threading.Thread(target=self.run_command, args=(self.get_command_args(cmd), cmd, content, window, window.active_view().file_name()))
     t.start()
 
   def process_phpcbf_results(self, newContent, window, content):
@@ -137,12 +137,15 @@ class PHP_CodeSniffer:
 
     return args
 
-  def run_command(self, args, cmd, content, window):
+  def run_command(self, args, cmd, content, window, file_path):
     shell = False
     if os.name == 'nt':
       shell = True
 
     proc = subprocess.Popen(args, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+
+    if cmd == 'phpcs':
+      content = 'phpcs_input_file: ' + file_path + "\n" + content;
 
     if proc.stdout:
       data = proc.communicate(content)[0]
