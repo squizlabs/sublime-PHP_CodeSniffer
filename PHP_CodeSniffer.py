@@ -41,7 +41,7 @@ class PHP_CodeSniffer:
 
     # Replace the main view contents with the fixed content.
     mainEdit = window.active_view().begin_edit()
-    window.active_view().replace(mainEdit, sublime.Region(0, window.active_view().size()), newContent)
+    window.active_view().replace(mainEdit, sublime.Region(0, window.active_view().size()), newContent.decode('utf-8'))
     window.active_view().end_edit(mainEdit)
 
     # Print the diff in output view.
@@ -54,15 +54,15 @@ class PHP_CodeSniffer:
 
   def runDiff(self, window, origContent, newContent):
     try:
-        a = origContent.splitlines()
+        a = origContent.encode('utf-8').splitlines()
         b = newContent.splitlines()
-    except UnicodeDecodeError:
+    except UnicodeDecodeError as e:
         sublime.status_message("Diff only works with UTF-8 files")
         return
 
     # Get the diff between original content and the fixed content.
     diff = difflib.unified_diff(a, b, 'Original', 'Fixed', lineterm='')
-    difftxt = u"\n".join(line for line in diff)
+    difftxt = u"\n".join(line.decode('utf-8') for line in diff)
 
     if difftxt == "":
       sublime.status_message('PHP_CodeSniffer did not make any changes')
@@ -73,6 +73,10 @@ class PHP_CodeSniffer:
 
 
   def process_phpcs_results(self, data, window):
+    if data == '':
+      sublime.status_message('No errors or warnings detected.')
+      return
+
     outputView = self.initResultsPanel(window)
     self.showResultsPanel(window)
     self.view_type = 'phpcs'
@@ -148,7 +152,7 @@ class PHP_CodeSniffer:
       content = 'phpcs_input_file: ' + file_path + "\n" + content;
 
     if proc.stdout:
-      data = proc.communicate(content)[0]
+      data = proc.communicate(content.encode('utf-8'))[0]
 
     if cmd == 'phpcs':
       sublime.set_timeout(lambda: self.process_phpcs_results(data, window), 0)
