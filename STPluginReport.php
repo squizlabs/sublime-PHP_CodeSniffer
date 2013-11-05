@@ -144,7 +144,7 @@ class PHP_CodeSniffer_Reports_STPluginReport implements PHP_CodeSniffer_Report
             }//end foreach
         }//end if
 
-        if ($report['errors'] > 0) {
+        if ($report['warnings'] > 0) {
             echo PHP_EOL.' Warnings:'.PHP_EOL;
             foreach ($report['messages'] as $line => $lineErrors) {
                 foreach ($lineErrors as $column => $colErrors) {
