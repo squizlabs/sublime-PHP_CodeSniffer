@@ -40,7 +40,8 @@ class PHP_CodeSniffer:
     self.view_type = 'phpcbf'
 
     # Replace the main view contents with the fixed content.
-    mainEdit = window.active_view().begin_edit()
+    scrollPos = window.active_view().viewport_position()
+    mainEdit  = window.active_view().begin_edit()
     window.active_view().replace(mainEdit, sublime.Region(0, window.active_view().size()), newContent.decode('utf-8'))
     window.active_view().end_edit(mainEdit)
 
@@ -50,6 +51,8 @@ class PHP_CodeSniffer:
     outputView.insert(edit, 0, difftxt)
     outputView.end_edit(edit)
     outputView.set_read_only(True)
+
+    window.active_view().set_viewport_position(scrollPos, False)
 
 
   def runDiff(self, window, origContent, newContent):
