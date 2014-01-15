@@ -151,11 +151,10 @@ class PHP_CodeSniffer:
 
     proc = subprocess.Popen(args, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 
-    if cmd == 'phpcs':
-      content = 'phpcs_input_file: ' + file_path + "\n" + content;
+    phpcsContent = 'phpcs_input_file: ' + file_path + "\n" + content;
 
     if proc.stdout:
-      data = proc.communicate(content.encode('utf-8'))[0]
+      data = proc.communicate(phpcsContent.encode('utf-8'))[0]
 
     if cmd == 'phpcs':
       sublime.set_timeout(lambda: self.process_phpcs_results(data, window), 0)
