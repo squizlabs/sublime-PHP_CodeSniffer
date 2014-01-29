@@ -42,25 +42,25 @@ class PHP_CodeSniffer:
     self.processed = True
 
     # Remove the gutter markers.
-    window.active_view().erase_regions('errors')
-    window.active_view().erase_regions('warnings')
     self.window = window
     self.file_view = window.active_view()
+
+    self.file_view.erase_regions('errors')
+    self.file_view.erase_regions('warnings')
 
     # Show diff text in the results panel.
     self.showResultsPanel(window, difftxt)
     self.view_type = 'phpcbf'
 
     # Store the current viewport position.
-    scrollPos = window.active_view().viewport_position()
-
-    # Replace the main view contents with the fixed content.
-    mainEdit  = window.active_view().begin_edit()
-    window.active_view().replace(mainEdit, sublime.Region(0, window.active_view().size()), newContent.decode('utf-8'))
-    window.active_view().end_edit(mainEdit)
+    scrollPos = self.file_view.viewport_position()
+    mainEdit  = self.file_view.begin_edit()
+    self.file_view.replace(mainEdit, sublime.Region(0, self.file_view.size()), newContent.decode('utf-8'))
+    self.file_view.end_edit(mainEdit)
 
     # After the active view contents are changed set the scroll position back to previous position.
-    window.active_view().set_viewport_position(scrollPos, False)
+    self.file_view.set_viewport_position((0, 0), False)
+    self.file_view.set_viewport_position(scrollPos, False)
 
 
   def runDiff(self, window, origContent, newContent):
