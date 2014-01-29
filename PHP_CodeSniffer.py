@@ -15,11 +15,22 @@ class PHP_CodeSniffer:
   file_view = None
   view_type = None
   window    = None
+  processed = False
 
-  def run(self, window, cmd):
+  def run(self, window, cmd, msg):
+    self.window = window
     content = window.active_view().substr(sublime.Region(0, window.active_view().size()))
+
+    tm = threading.Thread(target=self.loadingMsg, args=([msg]))
+    tm.start()
+
     t = threading.Thread(target=self.run_command, args=(self.get_command_args(cmd), cmd, content, window, window.active_view().file_name()))
     t.start()
+
+
+  def loadingMsg(self, msg):
+    sublime.set_timeout(lambda: self.showLoadingMessage(msg), 0)
+
 
   def process_phpcbf_results(self, newContent, window, content):
     # Get the diff between content and the new content.
@@ -28,30 +39,27 @@ class PHP_CodeSniffer:
       self.clear_view()
       return
 
+    self.processed = True
+
     # Remove the gutter markers.
     window.active_view().erase_regions('errors')
     window.active_view().erase_regions('warnings')
     self.window = window
     self.file_view = window.active_view()
 
-    # Show results panel.
-    outputView = self.initResultsPanel(window)
-    self.showResultsPanel(window)
+    # Show diff text in the results panel.
+    self.showResultsPanel(window, difftxt)
     self.view_type = 'phpcbf'
 
-    # Replace the main view contents with the fixed content.
+    # Store the current viewport position.
     scrollPos = window.active_view().viewport_position()
+
+    # Replace the main view contents with the fixed content.
     mainEdit  = window.active_view().begin_edit()
     window.active_view().replace(mainEdit, sublime.Region(0, window.active_view().size()), newContent.decode('utf-8'))
     window.active_view().end_edit(mainEdit)
 
-    # Print the diff in output view.
-    outputView.set_read_only(False)
-    edit = outputView.begin_edit()
-    outputView.insert(edit, 0, difftxt)
-    outputView.end_edit(edit)
-    outputView.set_read_only(True)
-
+    # After the active view contents are changed set the scroll position back to previous position.
     window.active_view().set_viewport_position(scrollPos, False)
 
 
@@ -77,20 +85,15 @@ class PHP_CodeSniffer:
 
   def process_phpcs_results(self, data, window):
     if data == '':
-      sublime.status_message('No errors or warnings detected.')
+      self.showMessage('No errors or warnings detected.')
       return
 
-    outputView = self.initResultsPanel(window)
-    self.showResultsPanel(window)
-    self.view_type = 'phpcs'
+    self.processed = True
+
+    self.showResultsPanel(window, data)
     self.window = window
     self.file_view = window.active_view()
-
-    outputView.set_read_only(False)
-    edit = outputView.begin_edit()
-    outputView.insert(edit, outputView.size(), data)
-    outputView.end_edit(edit)
-    outputView.set_read_only(True)
+    self.view_type = 'phpcs'
 
     # Add gutter markers for each error.
     lines        = data.split("\n")
@@ -149,6 +152,8 @@ class PHP_CodeSniffer:
     if os.name == 'nt':
       shell = True
 
+    self.processed = False
+
     proc = subprocess.Popen(args, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 
     phpcsContent = 'phpcs_input_file: ' + file_path + "\n" + content;
@@ -172,9 +177,36 @@ class PHP_CodeSniffer:
     self.output_view.settings().set("file_path", window.active_view().file_name())
     return self.output_view
 
+  def showResultsPanel(self, window, data):
+    outputView = self.initResultsPanel(window)
+    window.run_command("show_panel", {"panel": "output." + RESULT_VIEW_NAME})
+    outputView.set_read_only(False)
+    edit = outputView.begin_edit()
+    outputView.insert(edit, 0, data)
+    outputView.end_edit(edit)
+    outputView.set_read_only(True)
 
-  def showResultsPanel(self, window):
-    window.run_command("show_panel", {"panel": "output."+RESULT_VIEW_NAME})
+
+  def showMessage(self, msg):
+    sublime.status_message(msg)
+    #self.showResultsPanel(self.window, msg)
+
+
+  procAnimIdx = 0
+  procAnim = ['|', '/', '-', '\\']
+  def showLoadingMessage(self, msg):
+    if self.processed == True:
+      self.showMessage('')
+      return
+
+    msg = msg[:-2]
+    msg = msg + ' ' + self.procAnim[self.procAnimIdx]
+    self.procAnimIdx += 1;
+    if self.procAnimIdx > 3:
+      self.procAnimIdx = 0
+
+    self.showMessage(msg)
+    sublime.set_timeout(lambda: self.showLoadingMessage(msg), 500)
 
 
   def clear_view(self):
@@ -245,11 +277,11 @@ phpcs = PHP_CodeSniffer()
 
 class PhpcbfCommand(sublime_plugin.WindowCommand):
   def run(self):
-    phpcs.run(self.window, 'phpcbf')
+    phpcs.run(self.window, 'phpcbf', 'Runnings PHPCS Fixer  ')
 
 class PhpcsCommand(sublime_plugin.WindowCommand):
   def run(self):
-    phpcs.run(self.window, 'phpcs')
+    phpcs.run(self.window, 'phpcs', 'Runnings PHPCS  ')
 
 
 class PhpcsEventListener(sublime_plugin.EventListener):
