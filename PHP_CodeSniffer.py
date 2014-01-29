@@ -35,11 +35,11 @@ class PHP_CodeSniffer:
   def process_phpcbf_results(self, newContent, window, content):
     # Get the diff between content and the new content.
     difftxt = self.runDiff(window, content, newContent)
+    self.processed = True
+
     if not difftxt:
       self.clear_view()
       return
-
-    self.processed = True
 
     # Remove the gutter markers.
     self.window = window
@@ -84,6 +84,8 @@ class PHP_CodeSniffer:
 
 
   def process_phpcs_results(self, data, window):
+    self.processed = True
+
     if data == '':
       self.showMessage('No errors or warnings detected.')
       return
