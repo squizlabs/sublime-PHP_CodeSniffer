@@ -229,7 +229,7 @@ class PHP_CodeSniffer:
     line   = self.output_view.substr(region)
 
     if line.find('[ Click here to fix this file ]') != -1:
-      self.run(self.window, 'phpcbf')
+      self.run(self.window, 'phpcbf', 'Runnings PHPCS Fixer  ')
       return
     else:
       match = re.match(r'[^:0-9]+([0-9]+)\s*:', line)
