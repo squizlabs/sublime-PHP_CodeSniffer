@@ -12,10 +12,11 @@ settings         = sublime.load_settings('PHP_CodeSniffer.sublime-settings')
 
 class PHP_CodeSniffer:
   # Type of the view, phpcs or phpcbf.
-  file_view = None
-  view_type = None
-  window    = None
-  processed = False
+  file_view   = None
+  view_type   = None
+  window      = None
+  processed   = False
+  output_view = None
 
   def run(self, window, cmd, msg):
     self.window = window
@@ -51,6 +52,7 @@ class PHP_CodeSniffer:
 
     # Show diff text in the results panel.
     self.showResultsPanel(window, difftxt)
+    self.showMessage('');
 
     # Store the current viewport position.
     scrollPos = self.file_view.viewport_position()
@@ -90,12 +92,14 @@ class PHP_CodeSniffer:
     self.view_type = 'phpcs'
 
     if data == '':
-      self.clear_view()
+      self.file_view.erase_regions('errors')
+      self.file_view.erase_regions('warnings')
       window.run_command("hide_panel", {"panel": "output." + RESULT_VIEW_NAME})
       self.showMessage('No errors or warnings detected.')
       return
 
     self.showResultsPanel(window, data)
+    self.showMessage('');
 
     # Add gutter markers for each error.
     lines        = data.split("\n")
@@ -169,11 +173,10 @@ class PHP_CodeSniffer:
       sublime.set_timeout(lambda: self.process_phpcbf_results(data, window, content), 0)
 
   def initResultsPanel(self, window):
-    if not hasattr(self, 'output_view'):
-      self.output_view = window.get_output_panel(RESULT_VIEW_NAME)
-      self.output_view.set_syntax_file('Packages/Diff/Diff.tmLanguage')
-      self.output_view.set_name(RESULT_VIEW_NAME)
-      self.output_view.settings().set('gutter', False)
+    self.output_view = window.get_output_panel(RESULT_VIEW_NAME)
+    self.output_view.set_syntax_file('Packages/Diff/Diff.tmLanguage')
+    self.output_view.set_name(RESULT_VIEW_NAME)
+    self.output_view.settings().set('gutter', False)
 
     self.clear_view()
     self.output_view.settings().set("file_path", window.active_view().file_name())
@@ -191,32 +194,31 @@ class PHP_CodeSniffer:
 
   def showMessage(self, msg):
     sublime.status_message(msg)
-    #self.showResultsPanel(self.window, msg)
 
 
   procAnimIdx = 0
-  procAnim = ['|', '/', '-', '\\']
+  procAnim = [u'\u25d0', u'\u25d3', u'\u25d1', u'\u25d2']
   def showLoadingMessage(self, msg):
     if self.processed == True:
-      self.showMessage('')
       return
 
     msg = msg[:-2]
     msg = msg + ' ' + self.procAnim[self.procAnimIdx]
     self.procAnimIdx += 1;
-    if self.procAnimIdx > 3:
+    if self.procAnimIdx > (len(self.procAnim) - 1):
       self.procAnimIdx = 0
 
     self.showMessage(msg)
-    sublime.set_timeout(lambda: self.showLoadingMessage(msg), 500)
+    sublime.set_timeout(lambda: self.showLoadingMessage(msg), 300)
 
 
   def clear_view(self):
-    self.output_view.set_read_only(False)
-    edit = self.output_view.begin_edit()
-    self.output_view.erase(edit, sublime.Region(0, self.output_view.size()))
-    self.output_view.end_edit(edit)
-    self.output_view.set_read_only(True)
+    if self.output_view:
+      self.output_view.set_read_only(False)
+      edit = self.output_view.begin_edit()
+      self.output_view.erase(edit, sublime.Region(0, self.output_view.size()))
+      self.output_view.end_edit(edit)
+      self.output_view.set_read_only(True)
 
     self.file_view.erase_regions('errors')
     self.file_view.erase_regions('warnings')
