@@ -33,6 +33,11 @@ class PHP_CodeSniffer:
 
 
   def process_phpcbf_results(self, newContent, window, content):
+    # Remove the gutter markers.
+    self.window    = window
+    self.file_view = window.active_view()
+    self.view_type = 'phpcbf'
+
     # Get the diff between content and the new content.
     difftxt = self.runDiff(window, content, newContent)
     self.processed = True
@@ -41,16 +46,11 @@ class PHP_CodeSniffer:
       self.clear_view()
       return
 
-    # Remove the gutter markers.
-    self.window = window
-    self.file_view = window.active_view()
-
     self.file_view.erase_regions('errors')
     self.file_view.erase_regions('warnings')
 
     # Show diff text in the results panel.
     self.showResultsPanel(window, difftxt)
-    self.view_type = 'phpcbf'
 
     # Store the current viewport position.
     scrollPos = self.file_view.viewport_position()
@@ -85,17 +85,17 @@ class PHP_CodeSniffer:
 
   def process_phpcs_results(self, data, window):
     self.processed = True
+    self.window    = window
+    self.file_view = window.active_view()
+    self.view_type = 'phpcs'
 
     if data == '':
+      self.clear_view()
+      window.run_command("hide_panel", {"panel": "output." + RESULT_VIEW_NAME})
       self.showMessage('No errors or warnings detected.')
       return
 
-    self.processed = True
-
     self.showResultsPanel(window, data)
-    self.window = window
-    self.file_view = window.active_view()
-    self.view_type = 'phpcs'
 
     # Add gutter markers for each error.
     lines        = data.split("\n")
@@ -217,6 +217,9 @@ class PHP_CodeSniffer:
     self.output_view.erase(edit, sublime.Region(0, self.output_view.size()))
     self.output_view.end_edit(edit)
     self.output_view.set_read_only(True)
+
+    self.file_view.erase_regions('errors')
+    self.file_view.erase_regions('warnings')
 
 
   def line_clicked(self):
