@@ -4,6 +4,7 @@ import sublime
 import sublime_plugin
 import subprocess
 import StringIO
+import string
 import difflib
 import threading
 
@@ -130,10 +131,6 @@ class PHP_CodeSniffer:
   def get_command_args(self, cmd_type):
     args = []
 
-    if os.name == 'nt':
-      args.append('start')
-      args.append('/B')
-
     if settings.get('php_path'):
       args.append(settings.get('php_path'))
     elif os.name == 'nt':
@@ -174,7 +171,6 @@ class PHP_CodeSniffer:
       shell = True
 
     self.processed = False
-
     proc = subprocess.Popen(args, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 
     if file_path:
@@ -201,6 +197,7 @@ class PHP_CodeSniffer:
     return self.output_view
 
   def showResultsPanel(self, window, data):
+    data = string.replace(data, '\r', '');
     outputView = self.initResultsPanel(window)
     window.run_command("show_panel", {"panel": "output." + RESULT_VIEW_NAME})
     outputView.set_read_only(False)
@@ -215,15 +212,21 @@ class PHP_CodeSniffer:
 
 
   procAnimIdx = 0
-  procAnim = [u'\u25d0', u'\u25d3', u'\u25d1', u'\u25d2']
+  procAnim = {
+    'windows': ['|', '/', '-', '\\'],
+    'linux': ['|', '/', '-', '\\'],
+    'osx': [u'\u25d0', u'\u25d3', u'\u25d1', u'\u25d2']
+  }
+
   def showLoadingMessage(self, msg):
     if self.processed == True:
       return
 
     msg = msg[:-2]
-    msg = msg + ' ' + self.procAnim[self.procAnimIdx]
+    msg = msg + ' ' + self.procAnim[sublime.platform()][self.procAnimIdx]
+
     self.procAnimIdx += 1;
-    if self.procAnimIdx > (len(self.procAnim) - 1):
+    if self.procAnimIdx > (len(self.procAnim[sublime.platform()]) - 1):
       self.procAnimIdx = 0
 
     self.showMessage(msg)
