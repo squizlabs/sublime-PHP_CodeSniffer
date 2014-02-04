@@ -145,8 +145,23 @@ class PHP_CodeSniffer:
     else:
       args.append(settings.get('phpcbf_path', 'phpcbf'))
 
+    standard_setting = settings.get('phpcs_standard')
+    standard = ''
+
+    if type(standard_setting) is dict:
+      for folder in self.window.folders():
+        folder_name = os.path.basename(folder)
+        if folder_name in standard_setting:
+          standard = standard_setting[folder_name]
+          break
+
+      if standard == '' and '_default' in standard_setting:
+        standard = standard_setting['_default']
+    else:
+      standard = standard_setting
+
     if settings.get('phpcs_standard'):
-      args.append('--standard=' + settings.get('phpcs_standard'))
+      args.append('--standard=' + standard)
 
     if settings.get('additional_args'):
       args += settings.get('additional_args')
@@ -162,7 +177,10 @@ class PHP_CodeSniffer:
 
     proc = subprocess.Popen(args, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 
-    phpcsContent = 'phpcs_input_file: ' + file_path + "\n" + content;
+    if file_path:
+      phpcsContent = 'phpcs_input_file: ' + file_path + "\n" + content;
+    else:
+      phpcsContent = content;
 
     if proc.stdout:
       data = proc.communicate(phpcsContent.encode('utf-8'))[0]
