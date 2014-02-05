@@ -129,8 +129,13 @@ class PHP_CodeSniffer:
 
     window.active_view().erase_regions('errors')
     window.active_view().erase_regions('warnings')
-    window.active_view().add_regions('errors', err_regions, self.settings.get('error_scope'), '../PHP_CodeSniffer/icons/error', sublime.HIDDEN)
-    window.active_view().add_regions('warnings', warn_regions, self.settings.get('warning_scope'), '../PHP_CodeSniffer/icons/warning', sublime.HIDDEN)
+
+    if sublime.version().startswith('2'):
+      window.active_view().add_regions('errors', err_regions, self.settings.get('error_scope'), '../PHP_CodeSniffer/icons/error', sublime.HIDDEN)
+      window.active_view().add_regions('warnings', warn_regions, self.settings.get('warning_scope'), '../PHP_CodeSniffer/icons/warning', sublime.HIDDEN)
+    else:
+      window.active_view().add_regions('errors', err_regions, self.settings.get('error_scope'), 'Packages/PHP_CodeSniffer/icons/error.png', sublime.HIDDEN)
+      window.active_view().add_regions('warnings', warn_regions, self.settings.get('warning_scope'), 'Packages/PHP_CodeSniffer/icons/warning.png', sublime.HIDDEN)
 
   def get_command_args(self, cmd_type):
     args = []
