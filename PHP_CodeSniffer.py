@@ -3,7 +3,6 @@ import re
 import sublime
 import sublime_plugin
 import subprocess
-import StringIO
 import string
 import difflib
 import threading
@@ -18,30 +17,36 @@ class PHP_CodeSniffer:
   window      = None
   processed   = False
   output_view = None
+  process_anim_idx = 0
+  process_anim = {
+    'windows': ['|', '/', '-', '\\'],
+    'linux': ['|', '/', '-', '\\'],
+    'osx': [u'\u25d0', u'\u25d3', u'\u25d1', u'\u25d2']
+  }
 
   def run(self, window, cmd, msg):
     self.window = window
     content = window.active_view().substr(sublime.Region(0, window.active_view().size()))
 
-    tm = threading.Thread(target=self.loadingMsg, args=([msg]))
+    tm = threading.Thread(target=self.loading_msg, args=([msg]))
     tm.start()
 
     t = threading.Thread(target=self.run_command, args=(self.get_command_args(cmd), cmd, content, window, window.active_view().file_name()))
     t.start()
 
 
-  def loadingMsg(self, msg):
-    sublime.set_timeout(lambda: self.showLoadingMessage(msg), 0)
+  def loading_msg(self, msg):
+    sublime.set_timeout(lambda: self.show_loading_msg(msg), 0)
 
 
-  def process_phpcbf_results(self, newContent, window, content):
+  def process_phpcbf_results(self, fixed_content, window, content):
     # Remove the gutter markers.
     self.window    = window
     self.file_view = window.active_view()
     self.view_type = 'phpcbf'
 
-    # Get the diff between content and the new content.
-    difftxt = self.runDiff(window, content, newContent)
+    # Get the diff between content and the fixed content.
+    difftxt = self.run_diff(window, content, fixed_content)
     self.processed = True
 
     if not difftxt:
@@ -51,32 +56,30 @@ class PHP_CodeSniffer:
     self.file_view.erase_regions('errors')
     self.file_view.erase_regions('warnings')
 
-    # Show diff text in the results panel.
-    self.showResultsPanel(window, difftxt)
-    self.showMessage('');
-
     # Store the current viewport position.
     scrollPos = self.file_view.viewport_position()
-    mainEdit  = self.file_view.begin_edit()
-    self.file_view.replace(mainEdit, sublime.Region(0, self.file_view.size()), newContent.decode('utf-8'))
-    self.file_view.end_edit(mainEdit)
+
+    # Show diff text in the results panel.
+    self.show_results_view(window, difftxt)
+    self.set_status_msg('');
+
+    self.file_view.run_command('set_view_content', {'data':fixed_content, 'replace':True})
 
     # After the active view contents are changed set the scroll position back to previous position.
-    self.file_view.set_viewport_position((0, 0), False)
     self.file_view.set_viewport_position(scrollPos, False)
 
 
-  def runDiff(self, window, origContent, newContent):
+  def run_diff(self, window, origContent, fixed_content):
     try:
-        a = origContent.encode('utf-8').splitlines()
-        b = newContent.splitlines()
+        a = origContent.splitlines()
+        b = fixed_content.splitlines()
     except UnicodeDecodeError as e:
         sublime.status_message("Diff only works with UTF-8 files")
         return
 
     # Get the diff between original content and the fixed content.
     diff = difflib.unified_diff(a, b, 'Original', 'Fixed', lineterm='')
-    difftxt = u"\n".join(line.decode('utf-8') for line in diff)
+    difftxt = u"\n".join(line for line in diff)
 
     if difftxt == "":
       sublime.status_message('PHP_CodeSniffer did not make any changes')
@@ -96,14 +99,14 @@ class PHP_CodeSniffer:
       self.file_view.erase_regions('errors')
       self.file_view.erase_regions('warnings')
       window.run_command("hide_panel", {"panel": "output." + RESULT_VIEW_NAME})
-      self.showMessage('No errors or warnings detected.')
+      self.set_status_msg('No errors or warnings detected.')
       return
 
-    self.showResultsPanel(window, data)
-    self.showMessage('');
+    self.show_results_view(window, data)
+    self.set_status_msg('');
 
     # Add gutter markers for each error.
-    lines        = data.split("\n")
+    lines        = data.decode('utf-8').split("\n")
     err_regions  = []
     warn_regions = []
     col_regions  = []
@@ -174,19 +177,20 @@ class PHP_CodeSniffer:
     proc = subprocess.Popen(args, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 
     if file_path:
-      phpcsContent = 'phpcs_input_file: ' + file_path + "\n" + content;
+      phpcs_content = 'phpcs_input_file: ' + file_path + "\n" + content;
     else:
-      phpcsContent = content;
+      phpcs_content = content;
 
     if proc.stdout:
-      data = proc.communicate(phpcsContent.encode('utf-8'))[0]
+      data = proc.communicate(phpcs_content.encode('utf-8'))[0]
 
     if cmd == 'phpcs':
       sublime.set_timeout(lambda: self.process_phpcs_results(data, window), 0)
     else:
+      data = data.decode('utf-8')
       sublime.set_timeout(lambda: self.process_phpcbf_results(data, window, content), 0)
 
-  def initResultsPanel(self, window):
+  def init_results_view(self, window):
     self.output_view = window.get_output_panel(RESULT_VIEW_NAME)
     self.output_view.set_syntax_file('Packages/Diff/Diff.tmLanguage')
     self.output_view.set_name(RESULT_VIEW_NAME)
@@ -196,49 +200,44 @@ class PHP_CodeSniffer:
     self.output_view.settings().set("file_path", window.active_view().file_name())
     return self.output_view
 
-  def showResultsPanel(self, window, data):
-    data = string.replace(data, '\r', '');
-    outputView = self.initResultsPanel(window)
+  def show_results_view(self, window, data):
+    if sublime.version().startswith('2'):
+      data = data.decode('utf-8').replace('\r', '')
+    else:
+      if type(data) is bytes:
+        data = data.decode('utf-8').replace('\r', '')
+
+    outputView = self.init_results_view(window)
     window.run_command("show_panel", {"panel": "output." + RESULT_VIEW_NAME})
     outputView.set_read_only(False)
-    edit = outputView.begin_edit()
-    outputView.insert(edit, 0, data)
-    outputView.end_edit(edit)
+
+    self.output_view.run_command('set_view_content', {'data':data})
+
     outputView.set_read_only(True)
 
 
-  def showMessage(self, msg):
+  def set_status_msg(self, msg):
     sublime.status_message(msg)
 
-
-  procAnimIdx = 0
-  procAnim = {
-    'windows': ['|', '/', '-', '\\'],
-    'linux': ['|', '/', '-', '\\'],
-    'osx': [u'\u25d0', u'\u25d3', u'\u25d1', u'\u25d2']
-  }
-
-  def showLoadingMessage(self, msg):
+  def show_loading_msg(self, msg):
     if self.processed == True:
       return
 
     msg = msg[:-2]
-    msg = msg + ' ' + self.procAnim[sublime.platform()][self.procAnimIdx]
+    msg = msg + ' ' + self.process_anim[sublime.platform()][self.process_anim_idx]
 
-    self.procAnimIdx += 1;
-    if self.procAnimIdx > (len(self.procAnim[sublime.platform()]) - 1):
-      self.procAnimIdx = 0
+    self.process_anim_idx += 1;
+    if self.process_anim_idx > (len(self.process_anim[sublime.platform()]) - 1):
+      self.process_anim_idx = 0
 
-    self.showMessage(msg)
-    sublime.set_timeout(lambda: self.showLoadingMessage(msg), 300)
+    self.set_status_msg(msg)
+    sublime.set_timeout(lambda: self.show_loading_msg(msg), 300)
 
 
   def clear_view(self):
-    if self.output_view:
+    if self.output_view != None:
       self.output_view.set_read_only(False)
-      edit = self.output_view.begin_edit()
-      self.output_view.erase(edit, sublime.Region(0, self.output_view.size()))
-      self.output_view.end_edit(edit)
+      self.output_view.run_command('set_view_content', {'data':''})
       self.output_view.set_read_only(True)
 
     self.file_view.erase_regions('errors')
@@ -298,6 +297,15 @@ class PHP_CodeSniffer:
   def go_to_line(self, lineNum):
     self.window.focus_view(self.file_view)
     self.file_view.run_command("goto_line", {"line": lineNum})
+
+
+
+class set_view_content(sublime_plugin.TextCommand):
+    def run(self, edit, data, replace=False):
+      if replace == True:
+        self.view.replace(edit, sublime.Region(0, self.view.size()), data)
+      else:
+        self.view.insert(edit, 0, data)
 
 
 # Init PHPCS.
