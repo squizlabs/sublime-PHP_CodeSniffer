@@ -8,7 +8,6 @@ import difflib
 import threading
 
 RESULT_VIEW_NAME = 'phpcs_result_view'
-settings         = sublime.load_settings('PHP_CodeSniffer.sublime-settings')
 
 class PHP_CodeSniffer:
   # Type of the view, phpcs or phpcbf.
@@ -17,6 +16,7 @@ class PHP_CodeSniffer:
   window      = None
   processed   = False
   output_view = None
+  settings    = None
   process_anim_idx = 0
   process_anim = {
     'windows': ['|', '/', '-', '\\'],
@@ -25,6 +25,7 @@ class PHP_CodeSniffer:
   }
 
   def run(self, window, cmd, msg):
+    self.settings = sublime.load_settings('PHP_CodeSniffer.sublime-settings')
     self.window = window
     content = window.active_view().substr(sublime.Region(0, window.active_view().size()))
 
@@ -128,24 +129,24 @@ class PHP_CodeSniffer:
 
     window.active_view().erase_regions('errors')
     window.active_view().erase_regions('warnings')
-    window.active_view().add_regions('errors', err_regions, settings.get('error_scope'), '../PHP_CodeSniffer/icons/error', sublime.HIDDEN)
-    window.active_view().add_regions('warnings', warn_regions, settings.get('warning_scope'), '../PHP_CodeSniffer/icons/warning', sublime.HIDDEN)
+    window.active_view().add_regions('errors', err_regions, self.settings.get('error_scope'), '../PHP_CodeSniffer/icons/error', sublime.HIDDEN)
+    window.active_view().add_regions('warnings', warn_regions, self.settings.get('warning_scope'), '../PHP_CodeSniffer/icons/warning', sublime.HIDDEN)
 
   def get_command_args(self, cmd_type):
     args = []
 
-    if settings.get('php_path'):
-      args.append(settings.get('php_path'))
+    if self.settings.get('php_path'):
+      args.append(self.settings.get('php_path'))
     elif os.name == 'nt':
       args.append('php')
 
     if cmd_type == 'phpcs':
-      args.append(settings.get('phpcs_path', 'phpcs'))
+      args.append(self.settings.get('phpcs_path', 'phpcs'))
       args.append('--report=' + sublime.packages_path() + '/PHP_CodeSniffer/STPluginReport.php')
     else:
-      args.append(settings.get('phpcbf_path', 'phpcbf'))
+      args.append(self.settings.get('phpcbf_path', 'phpcbf'))
 
-    standard_setting = settings.get('phpcs_standard')
+    standard_setting = self.settings.get('phpcs_standard')
     standard = ''
 
     if type(standard_setting) is dict:
@@ -160,11 +161,11 @@ class PHP_CodeSniffer:
     else:
       standard = standard_setting
 
-    if settings.get('phpcs_standard'):
+    if self.settings.get('phpcs_standard'):
       args.append('--standard=' + standard)
 
-    if settings.get('additional_args'):
-      args += settings.get('additional_args')
+    if self.settings.get('additional_args'):
+      args += self.settings.get('additional_args')
 
     return args
 
@@ -189,6 +190,7 @@ class PHP_CodeSniffer:
     else:
       data = data.decode('utf-8')
       sublime.set_timeout(lambda: self.process_phpcbf_results(data, window, content), 0)
+
 
   def init_results_view(self, window):
     self.output_view = window.get_output_panel(RESULT_VIEW_NAME)
@@ -331,6 +333,7 @@ class PhpcsEventListener(sublime_plugin.EventListener):
       view.erase_regions('warnings')
 
   def on_post_save(self, view):
+    settings = sublime.load_settings('PHP_CodeSniffer.sublime-settings')
     if settings.get('run_on_save', False) == False:
       return
 
