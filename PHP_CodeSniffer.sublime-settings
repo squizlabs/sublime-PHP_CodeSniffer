@@ -1,10 +1,10 @@
 {
-    "run_on_save": false,
+    "run_on_save": false,                   // Run PHPCS when a buffer is saved.
     "php_path": "",
     "phpcs_path": "/usr/local/bin/phpcs",
     "phpcbf_path": "/usr/local/bin/phpcbf",
-    "phpcs_standard": "Squiz",
-    "error_scope": "comment.block",
-    "warning_scope": "function",
-    "additional_args": []
+    "phpcs_standard": "Squiz",              // PHPCS Standard to Use. Can be a string or a dict (folder => standard).
+    "additional_args": [],                  // Additional arguments to pass to PHPCS/PHPCBF.
+    "error_scope": "comment.block",         // Gutter error icon colour.
+    "warning_scope": "function"             // Gutter warning icon colour.
 }
