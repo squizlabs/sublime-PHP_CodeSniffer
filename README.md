@@ -19,7 +19,7 @@ Installation
 ```
 git clone https://github.com/squizlabs/sublime-PHP_CodeSniffer PHP_CodeSniffer
 ```
-- Packages direcotry locations:
+- Packages directory locations:
 ```
 Mac: /Users/{user}/Library/Application Support/Sublime Text 2/Packages
 Windows: C:\Users\{user}\AppData\Roaming\Sublime Text 2\Packages
@@ -77,4 +77,4 @@ There are two shortcuts that can be used for Sublime PHP_CodeSniffer plugin:
 - **ALT + S**: Runs PHPCS command for the open buffer.
 - **ALT + SHIFT + S**: Runs PHPCBF command for the open buffer.
 
-These commands are also availble in Tools > PHP_CodeSniffer menu.
+These commands are also available in Tools > PHP_CodeSniffer menu.
