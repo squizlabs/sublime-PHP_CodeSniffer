@@ -4,24 +4,27 @@ PHP_CodeSniffer Sublime Text Plugin allows running of [PHP_CodeSniffer](https://
 
 Running the PHPCS command displays the coding standard violations report and displays gutter markers for the lines that have code violations.
 
+<a href="http://squizlabs.github.io/sublime-PHP_CodeSniffer/sublime-phpcs.png" target="_blank"><img src="http://squizlabs.github.io/sublime-PHP_CodeSniffer/sublime-phpcs-sm.png" alt="PHPCS screenshot" /></a>
+
 Running the PHPCBF command attempts to fix the coding standard violations and displays a diff of the changes that were made.
-
-Installation
---------------
-- Clone [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) and switch to the **phpcs-fixer** branch.
-- Install by cloning the plugin in to ST2/ST3 Packages directory.
-```
-git clone https://github.com/squizlabs/sublime-PHP_CodeSniffer PHP_CodeSniffer
-```
-
-Screenshot of the PHPCS results:
-
-<a href="http://squizlabs.github.io/sublime-PHP_CodeSniffer/sublime-phpcs-sm.png" target="_blank"><img src="http://squizlabs.github.io/sublime-PHP_CodeSniffer/sublime-phpcs-sm.png" alt="PHPCS screenshot" /></a>
-
-Screenshot of the PHPCS fixer's diff view and fixed source code:
 
 <a href="http://squizlabs.github.io/sublime-PHP_CodeSniffer/sublime-phpcbf.png" target="_blank"><img src="http://squizlabs.github.io/sublime-PHP_CodeSniffer/sublime-phpcbf-sm.png" alt="PHPCS Fixer screenshot" /></a>
 
+
+
+Installation
+--------------
+- Install [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) and switch to the **phpcs-fixer** branch.
+- Clone the PHP_CodeSniffer Sublime Text Plugin in to ST2/ST3 Packages directory.
+```
+git clone https://github.com/squizlabs/sublime-PHP_CodeSniffer PHP_CodeSniffer
+```
+- Packages direcotry locations:
+```
+Mac: /Users/{user}/Library/Application Support/Sublime Text 2/Packages
+Windows: C:\Users\{user}\AppData\Roaming\Sublime Text 2\Packages
+Linux: ~/.config/sublime-text-2/Packages
+```
 
 Configuration
 --------------
@@ -68,7 +71,7 @@ These settings define the colors used for the error and warning gutter markers.
 If set to *true* then buffer will be checked on each save.
 
 
-Using
+Usage
 --------
 There are two shortcuts that can be used for Sublime PHP_CodeSniffer plugin:
 - **ALT + S**: Runs PHPCS command for the open buffer.
