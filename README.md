@@ -14,6 +14,15 @@ Installation
 git clone https://github.com/squizlabs/sublime-PHP_CodeSniffer PHP_CodeSniffer
 ```
 
+Screenshot of the PHPCS results:
+
+<a href="http://squizlabs.github.io/sublime-PHP_CodeSniffer/sublime-phpcs-sm.png" target="_blank"><img src="http://squizlabs.github.io/sublime-PHP_CodeSniffer/sublime-phpcs-sm.png" alt="PHPCS screenshot" /></a>
+
+Screenshot of the PHPCS fixer's diff view and fixed source code:
+
+<a href="http://squizlabs.github.io/sublime-PHP_CodeSniffer/sublime-phpcbf.png" target="_blank"><img src="http://squizlabs.github.io/sublime-PHP_CodeSniffer/sublime-phpcbf-sm.png" alt="PHPCS Fixer screenshot" /></a>
+
+
 Configuration
 --------------
 Configuration files can be opened via Preferences > Package Settings > PHP_CodeSniffer.
