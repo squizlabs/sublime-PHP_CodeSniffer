@@ -37,7 +37,7 @@ Make sure the php_path, phpcs_path and phpcbf_path paths are correct. E.g.
 ```
 
 
-**phpcs_stantard**
+**phpcs_standard**
 
 This settings can be the name of a single standard or a list of folder/project names and the standard to be used for each project. E.g.
 ```
