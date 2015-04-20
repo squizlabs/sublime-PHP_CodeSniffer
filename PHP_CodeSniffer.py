@@ -7,8 +7,8 @@ import string
 import difflib
 import threading
 
+SETTINGS_FILE    = 'PHP_CodeSniffer.sublime-settings'
 RESULT_VIEW_NAME = 'phpcs_result_view'
-settings         = sublime.load_settings('PHP_CodeSniffer.sublime-settings')
 
 class PHP_CodeSniffer:
   # Type of the view, phpcs or phpcbf.
@@ -352,3 +352,7 @@ class PhpcsEventListener(sublime_plugin.EventListener):
 
     self.previous_region = region
     phpcs.line_clicked()
+
+def plugin_loaded():
+    global settings
+    settings = sublime.load_settings(SETTINGS_FILE)
