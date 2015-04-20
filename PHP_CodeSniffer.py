@@ -163,6 +163,8 @@ class PHP_CodeSniffer:
     if settings.get('phpcs_standard'):
       args.append('--standard=' + standard)
 
+    args.append('-')
+
     if settings.get('additional_args'):
       args += settings.get('additional_args')
 
