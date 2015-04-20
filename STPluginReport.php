@@ -2,30 +2,17 @@
 /**
  * Sublime Text Plugin report for PHP_CodeSniffer.
  *
- * PHP version 5
- *
- * @category  PHP
- * @package   PHP_CodeSniffer
  * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2012 Squiz Pty Ltd (ABN 77 084 670 600)
+ * @copyright 2006-2015 Squiz Pty Ltd (ABN 77 084 670 600)
  * @license   https://github.com/squizlabs/PHP_CodeSniffer/blob/master/licence.txt BSD Licence
- * @link      http://pear.php.net/package/PHP_CodeSniffer
  */
 
-/**
- * Sublime Text Plugin report for PHP_CodeSniffer.
- *
- * PHP version 5
- *
- * @category  PHP
- * @package   PHP_CodeSniffer
- * @author    Greg Sherwood <gsherwood@squiz.net>
- * @copyright 2006-2012 Squiz Pty Ltd (ABN 77 084 670 600)
- * @license   https://github.com/squizlabs/PHP_CodeSniffer/blob/master/licence.txt BSD Licence
- * @version   Release: @package_version@
- * @link      http://pear.php.net/package/PHP_CodeSniffer
- */
-class PHP_CodeSniffer_Reports_STPluginReport implements PHP_CodeSniffer_Report
+namespace PHP_CodeSniffer_SublimePlugin;
+
+use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Reports\Report;
+
+class STPluginReport implements Report
 {
 
 
@@ -43,12 +30,8 @@ class PHP_CodeSniffer_Reports_STPluginReport implements PHP_CodeSniffer_Report
      *
      * @return boolean
      */
-    public function generateFileReport(
-        $report,
-        PHP_CodeSniffer_File $phpcsFile,
-        $showSources=false,
-        $width=80
-    ) {
+    public function generateFileReport($report, File $phpcsFile, $showSources=false, $width=80)
+    {
         if ($report['errors'] === 0 && $report['warnings'] === 0) {
             // Nothing to print.
             return false;
