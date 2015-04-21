@@ -10,6 +10,8 @@ import threading
 SETTINGS_FILE    = 'PHP_CodeSniffer.sublime-settings'
 RESULT_VIEW_NAME = 'phpcs_result_view'
 
+settings = sublime.load_settings(SETTINGS_FILE)
+
 class PHP_CodeSniffer:
   # Type of the view, phpcs or phpcbf.
   file_view   = None
