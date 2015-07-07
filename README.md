@@ -14,7 +14,7 @@ Running the PHPCBF command attempts to fix the coding standard violations and di
 
 Installation
 --------------
-- Install [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) and switch to the **phpcs-fixer** branch.
+- Install [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer).
 - Clone the PHP_CodeSniffer Sublime Text Plugin in to ST2/ST3 Packages directory.
 ```
 git clone https://github.com/squizlabs/sublime-PHP_CodeSniffer PHP_CodeSniffer
