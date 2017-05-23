@@ -25,6 +25,7 @@ class PHP_CodeSniffer:
     'linux': ['|', '/', '-', '\\'],
     'osx': [u'\u25d0', u'\u25d3', u'\u25d1', u'\u25d2']
   }
+  regions = []
 
   def run(self, window, cmd, msg):
     self.window = window
@@ -123,15 +124,24 @@ class PHP_CodeSniffer:
         match = re.match(r'[^:0-9]+([0-9]+)\s*:', line)
         if match:
           pt = window.active_view().text_point(int(match.group(1)) - 1, 0)
+          r  = window.active_view().line(pt)
+          self.regions.append(
+            {
+              'region': r,
+              'type': msg_type,
+              'message': line
+            }
+          );
+
           if msg_type == 'error':
-            err_regions.append(window.active_view().line(pt))
+            err_regions.append(r)
           else:
-            warn_regions.append(window.active_view().line(pt))
+            warn_regions.append(r)
 
     window.active_view().erase_regions('errors')
     window.active_view().erase_regions('warnings')
-    window.active_view().add_regions('errors', err_regions, settings.get('error_scope'), 'Packages/PHP_CodeSniffer/icons/error.png', sublime.HIDDEN)
-    window.active_view().add_regions('warnings', warn_regions, settings.get('warning_scope'), 'Packages/PHP_CodeSniffer/icons/warning.png', sublime.HIDDEN)
+    window.active_view().add_regions('errors', err_regions, settings.get('error_scope'), 'Packages/PHP_CodeSniffer/icons/error.png', sublime.DRAW_STIPPLED_UNDERLINE | sublime.DRAW_NO_FILL | sublime.DRAW_NO_OUTLINE)
+    window.active_view().add_regions('warnings', warn_regions, settings.get('warning_scope'), 'Packages/PHP_CodeSniffer/icons/warning.png', sublime.DRAW_STIPPLED_UNDERLINE | sublime.DRAW_NO_FILL | sublime.DRAW_NO_OUTLINE)
 
   def get_command_args(self, cmd_type):
     args = []
@@ -302,7 +312,25 @@ class PHP_CodeSniffer:
     self.window.focus_view(self.file_view)
     self.file_view.run_command("goto_line", {"line": lineNum})
 
+  def showPopup(self, view, sublime, point):
+    styles  = '<style>body {margin:1px; border-radius: 5px;} .type-error {color: red} .type-warning {color:orange}';
+    styles += '.main { padding: 0 10px}'
+    styles += '</style>'
 
+    for region in self.regions:
+      if region.get('region').contains(point):
+        content  = styles + '<div class="main">';
+        content += '<p class="message type-' + region.get('type') + '">' + region.get('message').split(':')[1] + '</p>'
+        content += '</div>'
+
+        view.show_popup(
+            content,
+            flags=sublime.HIDE_ON_MOUSE_MOVE_AWAY,
+            location=point,
+            max_width=1200,
+            max_height=500,
+        )
+        break
 
 class set_view_content(sublime_plugin.TextCommand):
     def run(self, edit, data, replace=False):
@@ -354,6 +382,10 @@ class PhpcsEventListener(sublime_plugin.EventListener):
 
     self.previous_region = region
     phpcs.line_clicked()
+
+  def on_hover(self, view, point, hover_zone):
+        if hover_zone == sublime.HOVER_GUTTER:
+            phpcs.showPopup(view, sublime, point)
 
 def plugin_loaded():
     global settings
