@@ -313,6 +313,9 @@ class PHP_CodeSniffer:
     self.file_view.run_command("goto_line", {"line": lineNum})
 
   def showPopup(self, view, sublime, point):
+    if self.output_view is None or self.output_view.window() is None:
+      return
+
     styles  = '<style>body {margin:1px; border-radius: 5px;} .type-error {color: red} .type-warning {color:orange}';
     styles += '.main { padding: 0 10px}'
     styles += '</style>'
